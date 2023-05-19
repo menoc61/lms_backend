@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler");
 const generateToken = require("../config/jwtToken");
 const { validateMongodbId } = require("../config/validateMongoDbId");
 const crypto = require("crypto");
+const sendEmail = require("./emailcontroller");
 /* Create a User */
 const registerUser = asyncHandler(async (req, res) => {
   /* Get the email form req.body and find whether a user with email exists or not */
@@ -174,6 +175,13 @@ const forgotPasswordToken = asyncHandler(async (res, req) => {
     const token = await user.createPasswordResetToken();
     await user.save();
     const resetLink = `http://localhost:4000/api/user/reset-password/${token}`;
+    const data = {
+      to: email,
+      text: `Hey ${user.firstname} ${user.lastname} (●'◡'●)`,
+      subject: "Forget Password",
+      html: resetLink,
+    };
+    sendEmail(data);
     res.status(200), json(resetLink);
   } catch (error) {
     throw new Error(error);
